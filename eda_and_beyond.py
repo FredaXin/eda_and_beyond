@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,7 +17,7 @@ def intitial_eda_checks(df):
     if len(df[df.duplicated(keep=False)]) > 0:
         print(f'Number of duplicates is {df[df.duplicated(keep=False)]}')
         df.drop_duplicates(keep='first', inplace=True)
-        print('Warming! df has been mutated!')
+        print('Warning! df has been mutated!')
     else:
         print('No duplicates found.')
 
@@ -42,7 +41,7 @@ def view_columns_w_many_nans(df, missing_percent=.9):
 
 def drop_columns_w_many_nan(df, missing_percent=.9):
     '''
-    Define a funciton that will drop the columns whose missing value bigger than missing_percent
+    Define a function that will drop the columns whose missing value bigger than missing_percent
     '''
     # mask_percent = df.isnull().mean()
     # series = mask_percent[mask_percent > missing_percent]
@@ -115,12 +114,16 @@ def high_corr_among_independent_variable(df, dependent_variable, corr_value):
                 for key_1, imbeded_dictionary in corr_dict.items()}
     return {k:v for k, v in temp_dict.items() if v}
 
-
 def get_categorical_columns(df):
-    return [f for f in df.columns if df.dtypes[f] == 'object']
+    # Already default Pandas DataFrame method - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.select_dtypes.html#pandas.DataFrame.select_dtypes
+    return df.select_dtypes("object")
+    #return [f for f in df.columns if df.dtypes[f] == 'object']
 
 def get_numerical_columns(df):
-    return [f for f in df.columns if df.dtypes[f] != 'object']
+    # return [f for f in df.columns if df.dtypes[f] != 'object']
+    # Problematic, since logic will include numeric AND boolean columns
+    # Can try developer method ._get_numeric_data or use .select_dtypes (more proper)
+    return df._get_numeric_data()
 
 def dummify_categorical_columns(df):
     '''
