@@ -3,8 +3,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import sklearn 
 import scipy 
+
+from sklearn.linear_model import LinearRegression, LassoCV, RidgeCV
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.dummy import DummyRegressor
+from sklearn.metrics import r2_score
+
 
 # Thanks to Danny for sharing this function
 def intitial_eda_checks(df):
@@ -15,7 +22,7 @@ def intitial_eda_checks(df):
     check if there is nulls
     '''
     if len(df[df.duplicated(keep=False)]) > 0:
-        print(f'Number of duplicates is {df[df.duplicated(keep=False)]}')
+        print(df[df.duplicated(keep=False)])
         df.drop_duplicates(keep='first', inplace=True)
         print('Warning! df has been mutated!')
     else:
@@ -93,8 +100,9 @@ def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
     Get a dataframe of independant varibles that are highly (e.g. abs(corr) > 0.4) with dependent varible
     '''
     temp_df = df.corr()[[dependent_variable]].sort_values(by=dependent_variable, ascending=False)
-    mask = abs(temp_df[dependent_variable]) > corr_value
-    return temp_df.loc[mask]
+    mask_1 = abs(temp_df[dependent_variable]) > corr_value
+    mask_2 =  temp_df[dependent_variable] < 1
+    return temp_df.loc[mask_1 & mask_2]
 
 
 
@@ -122,7 +130,7 @@ def dummify_categorical_columns(df):
     '''
     Dummify all categorical columns
     '''
-    categorical_columns = df.select_dtypes("object").columns
+    categorical_columns = df.select_dtypes(include="object").columns
     return pd.get_dummies(df, columns=categorical_columns, drop_first=True)
 
 
@@ -132,3 +140,100 @@ def conform_columns(df_reference, df):
     '''
     to_drop = [c for c in df.columns if c not in df_reference.columns]
     return df.drop(to_drop, axis=1)
+
+
+
+
+def vizResids(model_title, X, y, random_state_number=42):
+    '''
+    Shout out to Mahdi Shadkam-Farrokhi for creating this beautiful visualization function!!
+    '''
+    
+    # For help with multiple figures: https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/subplots_demo.html
+
+    # HANDLING DATA
+    # train/test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=random_state_number)
+
+    # instatiate model
+    lr = LinearRegression()
+    # fit model
+    lr.fit(X_train, y_train)
+
+    preds = lr.predict(X_test)
+    resids = y_test - preds
+    target_name = y.name.capitalize()
+
+    # HANDLING SUBPLOTS
+    fig, axes = plt.subplots(2, 2, figsize=(12,10)) # 2 row x 2 columns
+    fig.suptitle(f"{model_title}: $R^2$ test ={lr.score(X_test, y_test):2.2%}", fontsize = 24, y = 1.05)
+
+    ax_1 = axes[0][0]
+    ax_2 = axes[0][1]
+    ax_3 = axes[1][0]
+
+    subplot_title_size = 18
+    subplot_label_size = 14
+    
+    # 1ST PLOT - y_true vs. y_pred
+    ax_1.set_title("True Values ($y$) vs. Predictions ($\hat{y}$)", fontsize = subplot_title_size, pad = 10)
+    maxDist = max(max(preds),max(y)) # maxiumum value used to determin x_lim and y_lim
+    minDist = min(min(preds),min(y)) # maxiumum value used to determin x_lim and y_lim
+    # 45deg line, signifying prediction == true value
+    ax_1.plot((minDist,maxDist),(minDist,maxDist), c = "r", alpha = .7);
+    
+    sns.scatterplot(ax = ax_1, x = y_test, y = preds, alpha = .5)
+    ax_1.set_xlabel("True Values ($y$)", fontsize = subplot_label_size, labelpad = 10)
+    ax_1.set_ylabel("Predictions ($\hat{y}$)", fontsize = subplot_label_size, labelpad = 10)
+
+    # 2ND PLOT - residuals
+    ax_2.set_title("Residuals", fontsize = subplot_title_size)
+    sns.scatterplot(ax = ax_2, x = range(len(resids)),y = resids, alpha = .5)
+    ax_2.set_ylabel(target_name, fontsize = subplot_label_size)
+    ax_2.axhline(0, c = "r", alpha = .7);
+
+    # 3RD PLOT - residuals histogram
+    ax_3.set_title("Histogram of residuals", fontsize = subplot_title_size)
+    sns.distplot(resids, ax = ax_3, kde = False);
+    ax_3.set_xlabel(target_name, fontsize = subplot_label_size)
+    ax_3.set_ylabel("Frequency", fontsize = subplot_label_size)
+
+    plt.tight_layout() # handles most overlaping and spacing issues
+
+
+from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score, max_error
+def error_metrics(y_true, y_preds, n, k):
+    '''
+    Take y_true, y_preds, n = number of observations of y_preds, k = number of varibles 
+    Return 6 error metrics
+    '''
+    def r2_adj(y_true, y_preds, n, k):
+        rss = np.sum((y_true - y_preds)**2)
+        null_model = np.sum((y_true - np.mean(y_true))**2)
+        r2 = 1 - rss/null_model
+        r2_adj = 1 - ((1-r2)*(n-1))/(n-k-1)
+        return r2_adj
+    
+    print('Mean Square Error: ', mean_squared_error(y_true, y_preds))
+    print('Root Mean Square Error: ', np.sqrt(mean_squared_error(y_true, y_preds)))
+    print('Mean absolute error: ', mean_absolute_error(y_true, y_preds))
+    print('Median absolute error: ', median_absolute_error(y_true, y_preds))
+    print('R^2 score:', r2_score(y_true, y_preds))
+    print('Adjusted R^2 score:', r2_adj(y_true, y_preds, n, k))
+
+
+
+import statsmodels.api as sm
+from io import StringIO
+def extract_individual_summary_table_statsmodel(X_test, y_test, table_number):
+    '''
+    extract individual summary table from statsmodel.summary
+    Take X_test, y_test, and table_number
+    Return a df
+    '''
+    X = sm.add_constant(X_test)
+    y = y_test
+    model = sm.OLS(y,X).fit()
+    summary_df = StringIO(model.summary().tables[table_number].as_csv())
+    meta_df = pd.read_csv(summary_df)
+    return meta_df
