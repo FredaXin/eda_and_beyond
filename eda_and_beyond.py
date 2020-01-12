@@ -43,9 +43,6 @@ def drop_columns_w_many_nan(df, missing_percent=.9):
     '''
     Define a function that will drop the columns whose missing value bigger than missing_percent
     '''
-    # mask_percent = df.isnull().mean()
-    # series = mask_percent[mask_percent > missing_percent]
-    # list_of_col = series.index.to_list()
     list_of_cols = view_columns_w_many_nans(df, missing_percent=missing_percent)
     df.drop(columns=list_of_cols)
     print(list_of_cols)
@@ -64,7 +61,7 @@ def histograms_numeric_columns(df, numerical_columns):
     return g
 
 
-# adapted from House Prices EDA: https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
+# Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     '''
     take df, a list of categorical columns, a dependant variable as str
@@ -103,7 +100,7 @@ def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
 
 def high_corr_among_independent_variable(df, dependent_variable, corr_value):
     '''
-    Check correlation among independant varibles (not with SalePrice)
+    Check correlation among independant varibles 
     To see which two features have strong corr with each ohter 
     '''
     df_corr = df.drop(columns=[dependent_variable]).corr()
@@ -114,11 +111,7 @@ def high_corr_among_independent_variable(df, dependent_variable, corr_value):
                 for key_1, imbeded_dictionary in corr_dict.items()}
     return {k:v for k, v in temp_dict.items() if v}
 
-def get_categorical_columns(df):
-    # Already default Pandas DataFrame method - https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.select_dtypes.html#pandas.DataFrame.select_dtypes
-    return df.select_dtypes("object")
-    #return [f for f in df.columns if df.dtypes[f] == 'object']
-
+#TODO will think about this one
 def get_numerical_columns(df):
     # return [f for f in df.columns if df.dtypes[f] != 'object']
     # Problematic, since logic will include numeric AND boolean columns
@@ -129,7 +122,7 @@ def dummify_categorical_columns(df):
     '''
     Dummify all categorical columns
     '''
-    categorical_columns = get_categorical_columns(df)
+    categorical_columns = df.select_dtypes("object").columns
     return pd.get_dummies(df, columns=categorical_columns, drop_first=True)
 
 
