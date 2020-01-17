@@ -17,9 +17,9 @@ from sklearn.metrics import r2_score
 def intitial_eda_checks(df):
     '''
     Thanks to Danny for sharing this function!
-    take a dataframe
-    check if there is duplicates
-    check if there is nulls
+    Take a dataframe
+    Check if there is duplicates
+    Check if there is nulls
     '''
     if len(df[df.duplicated(keep=False)]) > 0:
         print(df[df.duplicated(keep=False)])
@@ -44,13 +44,16 @@ def intitial_eda_checks(df):
 def view_columns_w_many_nans(df, missing_percent=.9):
     mask_percent = df.isnull().mean()
     series = mask_percent[mask_percent > missing_percent]
-    return series.index.to_list()
+    columns = series.index.to_list()
+    print(columns) 
+    return columns
 
-def drop_columns_w_many_nan(df, missing_percent=.9):
+def drop_columns_w_many_nans(df, missing_percent=.9):
     '''
     Define a function that will drop the columns whose missing value bigger than missing_percent
     '''
-    list_of_cols = view_columns_w_many_nans(df, missing_percent=missing_percent)
+    series = view_columns_w_many_nans(df, missing_percent=missing_percent)
+    list_of_cols = series.index.to_list()
     df.drop(columns=list_of_cols)
     print(list_of_cols)
     return df
@@ -71,8 +74,8 @@ def histograms_numeric_columns(df, numerical_columns):
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     '''
-    take df, a list of categorical columns, a dependant variable as str
-    return group boxplots of correlations between categorical varibles and dependant variable
+    Take df, a list of categorical columns, a dependant variable as str
+    Return group boxplots of correlations between categorical varibles and dependant variable
     '''
     def boxplot(x, y, **kwargs):
         sns.boxplot(x=x, y=y)
@@ -85,7 +88,10 @@ def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
 
 
 def heatmap_numeric_w_dependent_variable(df, dependent_variable):
-    plt.figure(figsize=(12, 10))
+    '''
+    Generate a heatmap of dependent variable's correlation with y
+    '''
+    plt.figure(figsize=(8, 10))
     g = sns.heatmap(df.corr()[[dependent_variable]].sort_values(by=dependent_variable), 
                     annot=True, 
                     cmap='coolwarm', 
@@ -101,8 +107,7 @@ def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
     '''
     temp_df = df.corr()[[dependent_variable]].sort_values(by=dependent_variable, ascending=False)
     mask_1 = abs(temp_df[dependent_variable]) > corr_value
-    mask_2 =  temp_df[dependent_variable] < 1
-    return temp_df.loc[mask_1 & mask_2]
+    return temp_df.loc[mask_1]
 
 
 
@@ -119,12 +124,33 @@ def high_corr_among_independent_variable(df, dependent_variable, corr_value):
                 for key_1, imbeded_dictionary in corr_dict.items()}
     return {k:v for k, v in temp_dict.items() if v}
 
-#TODO will think about this one
-def get_numerical_columns(df):
-    # return [f for f in df.columns if df.dtypes[f] != 'object']
-    # Problematic, since logic will include numeric AND boolean columns
-    # Can try developer method ._get_numeric_data or use .select_dtypes (more proper)
-    return df._get_numeric_data()
+
+
+def categorical_to_ordinal_transformer(categories):
+    '''
+    returns a function that will map categories to ordinal values based on the
+    order of the list of `categories` given. Ex.
+
+    If categories is ['A', 'B', 'C'] then the transformer will map 
+    'A' -> 0, 'B' -> 1, 'C' -> 2.
+    '''
+    return lambda categorical_value: categories.index(categorical_value)
+
+
+
+def transform_categorical_to_numercial(df, categorical_numerical_mapping):
+    '''
+    Transform categorical columns to numerical columns
+    Take a df, a dictionary 
+    Return df
+    '''
+    transformers = {k: categorical_to_ordinal_transformer(v) 
+                    for k, v in categorical_numerical_mapping.items()}
+    new_df = df.copy()
+    for col, transformer in transformers.items():
+        new_df[col] = new_df[col].map(transformer).astype('int64')
+    return new_df
+
 
 def dummify_categorical_columns(df):
     '''
@@ -132,6 +158,7 @@ def dummify_categorical_columns(df):
     '''
     categorical_columns = df.select_dtypes(include="object").columns
     return pd.get_dummies(df, columns=categorical_columns, drop_first=True)
+
 
 
 def conform_columns(df_reference, df):
@@ -204,7 +231,9 @@ def vizResids(model_title, X, y, random_state_number=42):
 from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score, max_error
 def error_metrics(y_true, y_preds, n, k):
     '''
-    Take y_true, y_preds, n = number of observations of y_preds, k = number of varibles 
+    Take y_true, y_preds,  
+    N is the number of observations.
+    K is the number of independent variables, excluding the constant.
     Return 6 error metrics
     '''
     def r2_adj(y_true, y_preds, n, k):
@@ -225,15 +254,19 @@ def error_metrics(y_true, y_preds, n, k):
 
 import statsmodels.api as sm
 from io import StringIO
-def extract_individual_summary_table_statsmodel(X_test, y_test, table_number):
+def extract_individual_summary_table_statsmodel(X, y, table_number):
     '''
-    extract individual summary table from statsmodel.summary
+    Extract individual summary table from statsmodel.summary
     Take X_test, y_test, and table_number
     Return a df
     '''
-    X = sm.add_constant(X_test)
-    y = y_test
+    X = sm.add_constant(X)
+    y = y
     model = sm.OLS(y,X).fit()
     summary_df = StringIO(model.summary().tables[table_number].as_csv())
     meta_df = pd.read_csv(summary_df)
     return meta_df
+
+
+
+
