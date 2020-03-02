@@ -3,23 +3,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import scipy 
-
 from sklearn.linear_model import LinearRegression, LassoCV, RidgeCV
 from sklearn.model_selection import cross_val_score, train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
+from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score
 from sklearn.dummy import DummyRegressor
-from sklearn.metrics import r2_score
 
+import statsmodels.api as sm
+from io import StringIO
 
 # Thanks to Danny for sharing this function
 def intitial_eda_checks(df):
     '''
-    Thanks to Danny for sharing this function!
-    Take a dataframe
-    Check if there is duplicates
-    Check if there is nulls
+    Thanks to Danny Sheehan for sharing this function!
+    Takes df
+    Checks duplicates
+    Checks nulls
     '''
     if len(df[df.duplicated(keep=False)]) > 0:
         print(df[df.duplicated(keep=False)])
@@ -42,6 +41,11 @@ def intitial_eda_checks(df):
         print('No NaN found.')
 
 def view_columns_w_many_nans(df, missing_percent=.9):
+    '''
+    Checks which columns have over specified percentage of missing values
+    Takes df, missing percentage
+    Returns columns as a list
+    '''
     mask_percent = df.isnull().mean()
     series = mask_percent[mask_percent > missing_percent]
     columns = series.index.to_list()
@@ -50,7 +54,9 @@ def view_columns_w_many_nans(df, missing_percent=.9):
 
 def drop_columns_w_many_nans(df, missing_percent=.9):
     '''
-    Define a function that will drop the columns whose missing value bigger than missing_percent
+    Takes df, missing percentage(default=.9)
+    Drops the columns whose missing value is bigger than missing percentage
+    Returns df
     '''
     series = view_columns_w_many_nans(df, missing_percent=missing_percent)
     list_of_cols = series.index.to_list()
@@ -62,8 +68,8 @@ def drop_columns_w_many_nans(df, missing_percent=.9):
 # Reference: https://seaborn.pydata.org/tutorial/axis_grids.html
 def histograms_numeric_columns(df, numerical_columns):
     '''
-    take df, numerical columns as list
-    return group histagrams
+    Takes df, numerical columns as list
+    Returns group histagrams
     '''
     f = pd.melt(df, value_vars=numerical_columns) 
     g = sns.FacetGrid(f, col='variable',  col_wrap=4, sharex=False, sharey=False)
@@ -74,8 +80,8 @@ def histograms_numeric_columns(df, numerical_columns):
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     '''
-    Take df, a list of categorical columns, a dependant variable as str
-    Return group boxplots of correlations between categorical varibles and dependant variable
+    Takes df, a list of categorical columns, a dependant variable as str
+    Returns group boxplots of correlations between categorical varibles and dependant variable
     '''
     def boxplot(x, y, **kwargs):
         sns.boxplot(x=x, y=y)
@@ -86,10 +92,34 @@ def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     g = g.map(boxplot, 'value', dependant_variable)
     return g
 
+def scatter_plots(df, numerical_cols, target_col):
+    '''
+    Take a dataframe, a list of numerical columns, a target column as string
+    Return a group of scatter plots
+    '''
+    # Calculate the number of rows
+    num_rows = (len(numerical_cols) // 3) + 1
+    # Generate a 3 x n subplots frame
+    fix, ax = plt.subplots(num_rows, 3, sharey='row', figsize=(15,20))
+
+    # Reference: https://stackoverflow.com/a/434328
+    # Define a function to iterate through a list and divide them into chunks
+    def chunker(seq, size):
+        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+    
+    # Iterate through numerical_cols and generate each subplot
+    for y, plot_group in enumerate(chunker((numerical_cols), 3)):
+        for x, col in enumerate(plot_group):
+            sub_ax = ax[y][x]
+            plots = sub_ax.scatter(df[col], df[target_col], s=2)
+            plots_titles = sub_ax.set_title(col)
+    return (plots, plots_titles)
+    
 
 def heatmap_numeric_w_dependent_variable(df, dependent_variable):
     '''
-    Generate a heatmap of dependent variable's correlation with y
+    Takes df, a dependant variable as str
+    Returns a heatmap of independent variables' correlations with dependent variable 
     '''
     plt.figure(figsize=(8, 10))
     g = sns.heatmap(df.corr()[[dependent_variable]].sort_values(by=dependent_variable), 
@@ -103,7 +133,8 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable):
 
 def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
     '''
-    Get a dataframe of independant varibles that are highly (e.g. abs(corr) > 0.4) with dependent varible
+    Takes df, dependent variable, and value of correlation 
+    Returns a df of independant varibles that are highly (e.g. abs(corr) > 0.4) with dependent varible
     '''
     temp_df = df.corr()[[dependent_variable]].sort_values(by=dependent_variable, ascending=False)
     mask_1 = abs(temp_df[dependent_variable]) > corr_value
@@ -113,8 +144,9 @@ def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
 
 def high_corr_among_independent_variable(df, dependent_variable, corr_value):
     '''
-    Check correlation among independant varibles 
-    To see which two features have strong corr with each ohter 
+    Checks correlation among independant varibles, and checks which two features have strong corr 
+    Takes df, dependent variable, and value of correlation 
+    Returns dictionary 
     '''
     df_corr = df.drop(columns=[dependent_variable]).corr()
     corr_dict = df_corr.to_dict()
@@ -128,7 +160,8 @@ def high_corr_among_independent_variable(df, dependent_variable, corr_value):
 
 def categorical_to_ordinal_transformer(categories):
     '''
-    returns a function that will map categories to ordinal values based on the
+    Thanks to Shon Feder for sharing this function
+    Returns a function that will map categories to ordinal values based on the
     order of the list of `categories` given. Ex.
 
     If categories is ['A', 'B', 'C'] then the transformer will map 
@@ -140,9 +173,9 @@ def categorical_to_ordinal_transformer(categories):
 
 def transform_categorical_to_numercial(df, categorical_numerical_mapping):
     '''
-    Transform categorical columns to numerical columns
-    Take a df, a dictionary 
-    Return df
+    Transforms categorical columns to numerical columns
+    Takes a df, a dictionary 
+    Returns df
     '''
     transformers = {k: categorical_to_ordinal_transformer(v) 
                     for k, v in categorical_numerical_mapping.items()}
@@ -154,7 +187,9 @@ def transform_categorical_to_numercial(df, categorical_numerical_mapping):
 
 def dummify_categorical_columns(df):
     '''
-    Dummify all categorical columns
+    Dummifies all categorical columns
+    Takes df
+    Returns df
     '''
     categorical_columns = df.select_dtypes(include="object").columns
     return pd.get_dummies(df, columns=categorical_columns, drop_first=True)
@@ -163,7 +198,9 @@ def dummify_categorical_columns(df):
 
 def conform_columns(df_reference, df):
     '''
-    Drop columns in df that are not in df_reference
+    Drops columns in df that are not in df_reference
+    Takes df as reference, df 
+    Returns df
     '''
     to_drop = [c for c in df.columns if c not in df_reference.columns]
     return df.drop(to_drop, axis=1)
@@ -173,7 +210,9 @@ def conform_columns(df_reference, df):
 
 def vizResids(model_title, X, y, random_state_number=42):
     '''
-    Shout out to Mahdi Shadkam-Farrokhi for creating this beautiful visualization function!!
+    Thanks to Mahdi Shadkam-Farrokhi for creating this beautiful visualization function!
+    Takes model title as str, X(features), y(target)
+    Returns 3 error plots 
     '''
     
     # For help with multiple figures: https://matplotlib.org/3.1.1/gallery/subplots_axes_and_figures/subplots_demo.html
@@ -228,13 +267,13 @@ def vizResids(model_title, X, y, random_state_number=42):
     plt.tight_layout() # handles most overlaping and spacing issues
 
 
-from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score, max_error
+
 def error_metrics(y_true, y_preds, n, k):
     '''
-    Take y_true, y_preds,  
-    N is the number of observations.
-    K is the number of independent variables, excluding the constant.
-    Return 6 error metrics
+    Takes y_true, y_preds,  
+    n: the number of observations.
+    k: the number of independent variables, excluding the constant.
+    Returns 6 error metrics
     '''
     def r2_adj(y_true, y_preds, n, k):
         rss = np.sum((y_true - y_preds)**2)
@@ -252,13 +291,12 @@ def error_metrics(y_true, y_preds, n, k):
 
 
 
-import statsmodels.api as sm
-from io import StringIO
+
 def extract_individual_summary_table_statsmodel(X, y, table_number):
     '''
-    Extract individual summary table from statsmodel.summary
-    Take X_test, y_test, and table_number
-    Return a df
+    Extracts individual summary table from statsmodel.summary
+    Takes X_test, y_test, and table_number
+    Returns a df
     '''
     X = sm.add_constant(X)
     y = y
