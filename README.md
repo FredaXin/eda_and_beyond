@@ -1,6 +1,10 @@
 # EDA and Beyond - Python library for automating common procedures in machine learning and data science
 
-Author: Freda Xin
+
+**Contributors**:   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Freda Xin](www.linkedin.com/in/freda-xin)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Mahdi Shadkam-Farrokhi](https://github.com/Shaddyjr)
+
 
 ---
 ## Objective  
@@ -34,3 +38,8 @@ submit a pull request. :)
 --- 
 # Installation 
 
+---
+# References
+* [Learning Python: Powerful Object-Oriented Programming](https://www.amazon.ca/Learning-Python-Powerful-Object-Oriented-Programming/dp/1449355730)
+by Mark Lutz 
+* [Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow](https://www.amazon.ca/Hands-Machine-Learning-Scikit-Learn-TensorFlow/dp/1492032646/ref=asc_df_1492032646/?tag=googleshopc0c-20&linkCode=df0&hvadid=335305582969&hvpos=&hvnetw=g&hvrand=6176277305651191447&hvpone=&hvptwo=&hvqmt=&hvdev=c&hvdvcmdl=&hvlocint=&hvlocphy=9000975&hvtargid=pla-523968811896&psc=1) by Aurélien Géron
