@@ -12,8 +12,16 @@
 The aim of this library is to build a collection of automation tools for some common procedures in machine
 learning and data science.   
 
+The library currently consists of two parts: 
+* [EDA
+tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond/eda_tools.py)
+ 
 
-**Open-Source**   
+* [Modeling
+Tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond/modeling_tools.py)
+ 
+
+
 As someone who has benefitted immensely from the robust open-source communities, I
 would like to do my part to contribute. This library is still at its early
 stage, and I would like to invite any like-minded
@@ -22,18 +30,11 @@ submit a pull request. :)
 
 
 ---
-## Methodology 
-**OOP** 
+# More Resources
 
 **[Blog post on using Python functions](https://towardsdatascience.com/creating-python-functions-for-exploratory-data-analysis-and-data-cleaning-2c462961bd71?sk=ea9ba027ee85504c078145f442b204b9)**  
 **[Blog post on using Python classes]() (coming soon)**   
 
----
-## Library Structure
-
-### [EDA tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond.py)
-
-### [Modeling Tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond_02.py)
 
 --- 
 # Installation 
