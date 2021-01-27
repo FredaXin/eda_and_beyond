@@ -10,20 +10,20 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, median_abso
 from sklearn.dummy import DummyRegressor
 
 import statsmodels.api as sm
-from io import StringIO
 
-# Thanks to Danny for sharing this function
+
+
 def intitial_eda_checks(df):
     '''
-    Thanks to Danny Sheehan for sharing this function!
-    Takes df
-    Checks duplicates
+    Checks duplicates: if any duplicates found, the duplicates will be dropped
+    and a warming of dataframe mutation will be issued.
     Checks nulls
+    Takes dataframe
     '''
     if len(df[df.duplicated(keep=False)]) > 0:
         print(df[df.duplicated(keep=False)])
         df.drop_duplicates(keep='first', inplace=True)
-        print('Warning! df has been mutated!')
+        print('Warning! Dataframe has been mutated!')
     else:
         print('No duplicates found.')
 
@@ -40,10 +40,13 @@ def intitial_eda_checks(df):
     else: 
         print('No NaN found.')
 
+
+
 def view_columns_w_many_nans(df, missing_percent=.9):
     '''
-    Checks which columns have over specified percentage of missing values
-    Takes df, missing percentage
+    Checks which columns have over specified percentage of missing
+    values 
+    Takes dataframe, missing percentage (default=.9)
     Returns columns as a list
     '''
     mask_percent = df.isnull().mean()
@@ -52,11 +55,13 @@ def view_columns_w_many_nans(df, missing_percent=.9):
     print(columns) 
     return columns
 
+
+
 def drop_columns_w_many_nans(df, missing_percent=.9):
     '''
-    Takes df, missing percentage(default=.9)
-    Drops the columns whose missing value is bigger than missing percentage
-    Returns df
+    Drops the columns whose missing value are bigger than the specified missing percentage
+    Takes dataframe, missing percentage (default=.9)
+    Returns dataframe
     '''
     series = view_columns_w_many_nans(df, missing_percent=missing_percent)
     list_of_cols = series.index.to_list()
@@ -64,11 +69,13 @@ def drop_columns_w_many_nans(df, missing_percent=.9):
     print(list_of_cols)
     return df
 
+
+
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 # Reference: https://seaborn.pydata.org/tutorial/axis_grids.html
 def histograms_numeric_columns(df, numerical_columns):
     '''
-    Takes df, numerical columns as list
+    Takes dataframe, numerical columns as list
     Returns group histagrams
     '''
     f = pd.melt(df, value_vars=numerical_columns) 
@@ -80,7 +87,7 @@ def histograms_numeric_columns(df, numerical_columns):
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     '''
-    Takes df, a list of categorical columns, a dependant variable as str
+    Takes dataframe, categorical columns as list, dependant variable as string
     Returns group boxplots of correlations between categorical varibles and dependant variable
     '''
     def boxplot(x, y, **kwargs):
@@ -92,9 +99,11 @@ def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     g = g.map(boxplot, 'value', dependant_variable)
     return g
 
+
+
 def scatter_plots(df, numerical_cols, target_col):
     '''
-    Take a dataframe, a list of numerical columns, a target column as string
+    Take dataframe, numerical columns as list, target column as string
     Return a group of scatter plots
     '''
     # Calculate the number of rows
@@ -116,10 +125,11 @@ def scatter_plots(df, numerical_cols, target_col):
     return (plots, plots_titles)
     
 
+
 def heatmap_numeric_w_dependent_variable(df, dependent_variable):
     '''
-    Takes df, a dependant variable as str
-    Returns a heatmap of independent variables' correlations with dependent variable 
+    Takes dataframe, dependant variable as string
+    Returns heatmap of independent variables' correlations with dependent variable 
     '''
     plt.figure(figsize=(8, 10))
     g = sns.heatmap(df.corr()[[dependent_variable]].sort_values(by=dependent_variable), 
@@ -133,8 +143,8 @@ def heatmap_numeric_w_dependent_variable(df, dependent_variable):
 
 def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
     '''
-    Takes df, dependent variable, and value of correlation 
-    Returns a df of independant varibles that are highly (e.g. abs(corr) > 0.4) with dependent varible
+    Takes dataframe, dependent variable, and value of correlation 
+    Returns dataframe of independant varibles that are highly (e.g. abs(corr) > 0.4) with dependent varible
     '''
     temp_df = df.corr()[[dependent_variable]].sort_values(by=dependent_variable, ascending=False)
     mask_1 = abs(temp_df[dependent_variable]) > corr_value
@@ -144,8 +154,8 @@ def high_corr_w_dependent_variable(df, dependent_variable, corr_value):
 
 def high_corr_among_independent_variable(df, dependent_variable, corr_value):
     '''
-    Checks correlation among independant varibles, and checks which two features have strong corr 
-    Takes df, dependent variable, and value of correlation 
+    Checks correlation among independant varibles, and checks which two features have strong correlation
+    Takes dataframe, dependent variable, and value of correlation 
     Returns dictionary 
     '''
     df_corr = df.drop(columns=[dependent_variable]).corr()
@@ -160,10 +170,9 @@ def high_corr_among_independent_variable(df, dependent_variable, corr_value):
 
 def categorical_to_ordinal_transformer(categories):
     '''
-    Thanks to Shon Feder for sharing this function
     Returns a function that will map categories to ordinal values based on the
-    order of the list of `categories` given. Ex.
-
+    order of the list of `categories` given. 
+    Example: 
     If categories is ['A', 'B', 'C'] then the transformer will map 
     'A' -> 0, 'B' -> 1, 'C' -> 2.
     '''
@@ -174,8 +183,8 @@ def categorical_to_ordinal_transformer(categories):
 def transform_categorical_to_numercial(df, categorical_numerical_mapping):
     '''
     Transforms categorical columns to numerical columns
-    Takes a df, a dictionary 
-    Returns df
+    Takes dataframe, dictionary 
+    Returns dataframe
     '''
     transformers = {k: categorical_to_ordinal_transformer(v) 
                     for k, v in categorical_numerical_mapping.items()}
@@ -185,11 +194,12 @@ def transform_categorical_to_numercial(df, categorical_numerical_mapping):
     return new_df
 
 
+
 def dummify_categorical_columns(df):
     '''
     Dummifies all categorical columns
-    Takes df
-    Returns df
+    Takes dataframe
+    Returns dataframe
     '''
     categorical_columns = df.select_dtypes(include="object").columns
     return pd.get_dummies(df, columns=categorical_columns, drop_first=True)
@@ -198,20 +208,19 @@ def dummify_categorical_columns(df):
 
 def conform_columns(df_reference, df):
     '''
-    Drops columns in df that are not in df_reference
-    Takes df as reference, df 
-    Returns df
+    Drops columns in dataframe that are not in the reference dataframe
+    Takes dataframe as reference, dataframe
+    Returns dataframe
     '''
     to_drop = [c for c in df.columns if c not in df_reference.columns]
     return df.drop(to_drop, axis=1)
 
 
 
-
 def vizResids(model_title, X, y, random_state_number=42):
     '''
-    Thanks to Mahdi Shadkam-Farrokhi for creating this beautiful visualization function!
-    Takes model title as str, X(features), y(target)
+    Thanks to Mahdi Shadkam-Farrokhi for creating this visualization function!
+    Takes model title as string, X(features), y(target)
     Returns 3 error plots 
     '''
     
@@ -291,12 +300,11 @@ def error_metrics(y_true, y_preds, n, k):
 
 
 
-
 def extract_individual_summary_table_statsmodel(X, y, table_number):
     '''
     Extracts individual summary table from statsmodel.summary
     Takes X_test, y_test, and table_number
-    Returns a df
+    Returns a dataframe
     '''
     X = sm.add_constant(X)
     y = y

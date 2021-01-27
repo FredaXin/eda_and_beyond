@@ -16,13 +16,6 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, ExtraTreesRegressor, AdaBoostRegressor
 from sklearn.svm import SVR
 
-%matplotlib inline
-
-import warnings
-warnings.filterwarnings('ignore')
-
-
-
 
 class CatWalk:
     """
