@@ -20,7 +20,7 @@ The library consists of two modules:
   provides a class object that includes methods to streamline the
     modeling process for Scikit-Learn models. 
  
-This is a open-source project. Contributors are welcome. :) 
+This is an open-source project. Contributors are welcome. :) 
  
 
 ---
