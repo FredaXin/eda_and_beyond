@@ -11,6 +11,34 @@ from sklearn.dummy import DummyRegressor
 
 
 
+"""
+NAME 
+    eda_tools
+
+DESCRIPTION
+    This module provides functions to automate common procedures in EDA, model
+    preparation, and data visualization process. 
+
+MODULE CONTENTS
+    intitial_eda_checks
+    view_columns_w_many_nans
+    drop_columns_w_many_nans
+    histograms_numeric_columns
+    boxplots_categorical_columns
+    scatter_plots
+    heatmap_numeric_w_dependent_variable
+    high_corr_w_dependent_variable
+    high_corr_among_independent_variable
+    categorical_to_ordinal_transformer
+    transform_categorical_to_numercial
+    dummify_categorical_columns
+    conform_columns
+    viz_resids
+    print_error_metrics
+"""
+
+
+
 def intitial_eda_checks(df):
     '''
     Checks duplicates: if any duplicates found, the duplicates will be dropped
@@ -215,7 +243,7 @@ def conform_columns(df_reference, df):
 
 
 
-def vizResids(model_title, X, y, random_state_number=42):
+def viz_resids(model_title, X, y, random_state_number=42):
     '''
     Thanks to Mahdi Shadkam-Farrokhi for creating this visualization function!
     Takes model title (str), X(features), y(target)
@@ -275,7 +303,7 @@ def vizResids(model_title, X, y, random_state_number=42):
 
 
 
-def error_metrics(y_true, y_preds, n, k):
+def print_error_metrics(y_true, y_preds, n, k):
     '''
     Takes y_true, y_preds,  
     n: the number of observations.

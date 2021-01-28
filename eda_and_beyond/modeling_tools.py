@@ -18,15 +18,28 @@ from sklearn.svm import SVR
 
 
 """
-This module provides 
+NAME 
+    eda_tools
 
+DESCRIPTION
+    This module provides a class object that includes methods to streamline the
+    modeling process for Scikit-Learn models. 
+
+MODULE CONTENTS
+    __init__
+    _save_model
+    fit_non_gridsearch_model
+    fit_gridsearch_model
+    print_results
+    fit_print_non_pipeline_gridsearch
+    fit_print_pipeline_gridsearch
+    model_name_list
+    get_model
+    view_all_test_scores
+    make_predictions
 """
 
-class SKlearn_Modelar:
-    """
-    
-    """
-    
+class SKlearn_Modeler:
     # Define attributes
     def __init__(self, df, target, random_state, cv, metric, train_size=.6):
         self.cv = cv
@@ -96,8 +109,8 @@ class SKlearn_Modelar:
 
 
 
-    # Method to fit a non-pipeline or gridserach model and print result all in one motion
-    def do_the_simple_turn(self, name, fitter):
+    # Method to fit a non-pipeline or gridsearch model and print result all in one motion
+    def fit_print_non_pipeline_gridsearch(self, name, fitter):
         self.fit_non_gridsearch_model(name, fitter)
         self.print_results(name)
         return self
@@ -105,7 +118,7 @@ class SKlearn_Modelar:
 
 
     # Method to fit a gridserach model and print result all in one motion
-    def do_the_little_turn(self, name, pipe, params):
+    def fit_print_pipeline_gridsearch(self, name, pipe, params):
         self.fit_gridsearch_model(name, pipe, params)
         self.print_results(name)
         return self
