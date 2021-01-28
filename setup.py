@@ -23,8 +23,7 @@ setuptools.setup(
           'pandas',
           'matplotlib',
           'seaborn',
-          'sklearn',
-          'statsmodels'
+          'sklearn'
       ],
     python_requires='>=3.7',
 )

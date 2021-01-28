@@ -17,24 +17,31 @@ from sklearn.ensemble import BaggingRegressor, RandomForestRegressor, ExtraTrees
 from sklearn.svm import SVR
 
 
-class CatWalk:
+"""
+This module provides 
+
+"""
+
+class SKlearn_Modelar:
     """
-    If you know what I mean...
-    If you don't know what I mean: https://www.youtube.com/watch?v=P5mtclwloEQ
-    Hint: what do models do? They walk the catwalk.
+    
     """
     
     # Define attributes
-    def __init__(self, df):
-        self.X = df.drop(columns=TARGET)
-        self.y = df[TARGET] 
+    def __init__(self, df, target, random_state, cv, metric, train_size=.6):
+        self.cv = cv
+        self.metric = metric
+        
+        self.X = df.drop(columns=target)
+        self.y = df[target] 
+
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
             self.X, 
             self.y, 
-            random_state=RANDOM_STATE, 
-            train_size=0.60
+            random_state=random_state, 
+            train_size=train_size
         )
-        # The fitted models will be stored in a dicionary 
+        # The fitted models will be stored in a dictionary
         # e.g. {'name', (bool, Model)}
         # The key is the name of the model we supplied 
         # The value is a tupble (bool, Model)
@@ -42,63 +49,81 @@ class CatWalk:
         ## Model: is the fitted model itself
         self._fitted_models = {} 
     
+
+
     # Define a private method to accumulate fitted models
     def _save_model(self, name, model, is_grid_search=False):
         self._fitted_models[name] = (is_grid_search, model)
     
+
+
     # Define a method to fit a Non-GridSerach model
-    def fit_model(self, name, fitter):
+    def fit_non_gridsearch_model(self, name, fitter):
         model = fitter.fit(self.X_train, self.y_train)
         self._save_model(name, model)
         return self
     
+
+
     # Define a method to fit a GridSerach model    
-    def fit_grid_search(self, name, pipe=None, params=None):
+    def fit_gridsearch_model(self, name, pipe=None, params=None):
         pipe = Pipeline(steps=[]) if pipe is None else pipe
         params = {} if params is None else params
         
         model = GridSearchCV(
             pipe, 
             params, 
-            cv=CV
+            cv=self.cv
         ).fit(self.X_train, self.y_train)
         
         self._save_model(name, model, is_grid_search=True)
         return self
     
+
+
     # Define a method to print train, test, and cross_val scores
     def print_results(self, name):
         grid_search, model = self._fitted_models[name]
         if not grid_search:
             print(f'train score: {model.score(self.X_train, self.y_train)}')
             print(f'test score: {model.score(self.X_test, self.y_test)}')
-            print(f'cv score: {cross_val_score(model, self.X, self.y, scoring=METRIC, cv=CV).mean()}')
+            print(f'cv score: {cross_val_score(model, self.X, self.y, scoring=self.metric, cv=self.cv).mean()}')
         else: 
             print(f'best params: {model.best_params_}')
             print(f'train score: {model.score(self.X_train, self.y_train)}')
             print(f'test score: {model.score(self.X_test, self.y_test)}')
-            print(f'cv score: {cross_val_score(model.best_estimator_, self.X, self.y, scoring=METRIC, cv=CV).mean()}')      
+            print(f'cv score: {cross_val_score(model.best_estimator_, self.X, self.y, scoring=self.metric, cv=self.cv).mean()}')      
+
+
 
     # Method to fit a non-pipeline or gridserach model and print result all in one motion
     def do_the_simple_turn(self, name, fitter):
-        self.fit_model(name, fitter)
+        self.fit_non_gridsearch_model(name, fitter)
         self.print_results(name)
         return self
     
+
+
     # Method to fit a gridserach model and print result all in one motion
     def do_the_little_turn(self, name, pipe, params):
-        self.fit_grid_search(name, pipe, params)
+        self.fit_gridsearch_model(name, pipe, params)
         self.print_results(name)
         return self
     
+
+
     # Method to return a list of model names
     def model_name_list(self):
         return list(self._fitted_models.keys())
     
+
+
     # Method to return the fitted model itself
     def get_model(self, name):
         return self._fitted_models[name][1]
     
+
+
     # Method to print all test scores
     def view_all_test_scores(self):
         for name, value in self._fitted_models.items():
@@ -108,6 +133,8 @@ class CatWalk:
             else: 
                 print(f'{name} test score: {model.score(self.X_test, self.y_test)}')
     
+
+
     # Method to make predictions
     def make_predictions(self, name, input_data):
         preds = self.get_model(name).predict(input_data)

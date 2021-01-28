@@ -9,8 +9,6 @@ from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import mean_squared_error, mean_absolute_error, median_absolute_error, r2_score
 from sklearn.dummy import DummyRegressor
 
-import statsmodels.api as sm
-
 
 
 def intitial_eda_checks(df):
@@ -47,7 +45,7 @@ def view_columns_w_many_nans(df, missing_percent=.9):
     Checks which columns have over specified percentage of missing
     values 
     Takes dataframe, missing percentage (default=.9)
-    Returns columns as a list
+    Returns columns (list)
     '''
     mask_percent = df.isnull().mean()
     series = mask_percent[mask_percent > missing_percent]
@@ -75,7 +73,7 @@ def drop_columns_w_many_nans(df, missing_percent=.9):
 # Reference: https://seaborn.pydata.org/tutorial/axis_grids.html
 def histograms_numeric_columns(df, numerical_columns):
     '''
-    Takes dataframe, numerical columns as list
+    Takes dataframe, numerical columns (list)
     Returns group histagrams
     '''
     f = pd.melt(df, value_vars=numerical_columns) 
@@ -87,7 +85,7 @@ def histograms_numeric_columns(df, numerical_columns):
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
 def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
     '''
-    Takes dataframe, categorical columns as list, dependant variable as string
+    Takes dataframe, categorical columns (list), dependant variable (str)
     Returns group boxplots of correlations between categorical varibles and dependant variable
     '''
     def boxplot(x, y, **kwargs):
@@ -103,8 +101,7 @@ def boxplots_categorical_columns(df, categorical_columns, dependant_variable):
 
 def scatter_plots(df, numerical_cols, target_col):
     '''
-    Take dataframe, numerical columns as list, target column as string
-    Return a group of scatter plots
+    Takes dataframe, numerical columns (list), target column (str)
     '''
     # Calculate the number of rows
     num_rows = (len(numerical_cols) // 3) + 1
@@ -116,6 +113,7 @@ def scatter_plots(df, numerical_cols, target_col):
     def chunker(seq, size):
         return (seq[pos:pos + size] for pos in range(0, len(seq), size))
     
+    # TODO 
     # Iterate through numerical_cols and generate each subplot
     for y, plot_group in enumerate(chunker((numerical_cols), 3)):
         for x, col in enumerate(plot_group):
@@ -128,7 +126,7 @@ def scatter_plots(df, numerical_cols, target_col):
 
 def heatmap_numeric_w_dependent_variable(df, dependent_variable):
     '''
-    Takes dataframe, dependant variable as string
+    Takes dataframe, dependant variable (str)
     Returns heatmap of independent variables' correlations with dependent variable 
     '''
     plt.figure(figsize=(8, 10))
@@ -220,7 +218,7 @@ def conform_columns(df_reference, df):
 def vizResids(model_title, X, y, random_state_number=42):
     '''
     Thanks to Mahdi Shadkam-Farrokhi for creating this visualization function!
-    Takes model title as string, X(features), y(target)
+    Takes model title (str), X(features), y(target)
     Returns 3 error plots 
     '''
     
@@ -299,19 +297,6 @@ def error_metrics(y_true, y_preds, n, k):
     print('Adjusted R^2 score:', r2_adj(y_true, y_preds, n, k))
 
 
-
-def extract_individual_summary_table_statsmodel(X, y, table_number):
-    '''
-    Extracts individual summary table from statsmodel.summary
-    Takes X_test, y_test, and table_number
-    Returns a dataframe
-    '''
-    X = sm.add_constant(X)
-    y = y
-    model = sm.OLS(y,X).fit()
-    summary_df = StringIO(model.summary().tables[table_number].as_csv())
-    meta_df = pd.read_csv(summary_df)
-    return meta_df
 
 
 
