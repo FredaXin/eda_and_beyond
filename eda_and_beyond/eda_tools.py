@@ -41,19 +41,23 @@ MODULE CONTENTS
 
 def intitial_eda_checks(df):
     '''
-    Checks duplicates: if any duplicates found, the duplicates will be dropped
-    and a warming of dataframe mutation will be issued.
+    Checks duplicates
     Checks nulls
     Arg: dataframe
     '''
-    if len(df[df.duplicated(keep=False)]) > 0:
-        print(df[df.duplicated(keep=False)])
-        df.drop_duplicates(keep='first', inplace=True)
-        print('Warning! Dataframe has been mutated!')
+    results = {}
+    results['dup_found'] = None
+    results['pct_nan_found'] = None
+
+    num_of_dupe = len(df[df.duplicated(keep=False)])
+    if num_of_dupe > 0:
+        print(f'Number of dupes: {num_of_dupe}')
     else:
         print('No duplicates found.')
+    results['dup_found'] = num_of_dupe
 
-    if df.isnull().sum().sum() > 0:
+    num_of_nan = df.isnull().sum().sum()
+    if num_of_nan > 0:
         mask_total = df.isnull().sum().sort_values(ascending=False) 
         total = mask_total[mask_total > 0]
 
@@ -63,9 +67,13 @@ def intitial_eda_checks(df):
         missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
     
         print(f'Total and Percentage of NaN:\n {missing_data}')
+        results['pct_nan_found'] = percent
     else: 
         print('No NaN found.')
-
+        results['pct_nan_found'] = 0
+    
+    return results 
+    
 
 
 def view_columns_w_many_nans(df, missing_percent=.9):

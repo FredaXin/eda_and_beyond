@@ -7,6 +7,7 @@ verify_ssl = true
 
 [packages]
 eda-and-beyond = {editable = true,path = "."}
+nose = "*"
 
 [requires]
 python_version = "3.7"

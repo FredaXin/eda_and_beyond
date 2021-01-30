@@ -6,19 +6,18 @@
 
 ---
 ## Project Description 
-The library provides a collection of automation tools for some common procedures
+The package provides a collection of automation tools for some common procedures
 in machine learning. The current version aims to streamline the EDA and modeling
 process for [Scikit-Learn models](https://scikit-learn.org/stable/). 
 
 
-The library consists of two modules: 
+The package consists of two modules: 
 * [eda_tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond/eda_tools.py):
   provides functions to automate common procedures in EDA, model
     preparation, and data visualization etc. 
 
 * [modeling_tools](https://github.com/FredaXin/eda_and_beyond/blob/master/eda_and_beyond/modeling_tools.py):
-  provides a class object that includes methods to streamline the
-    modeling process for Scikit-Learn models. 
+  provides a class object that includes methods to streamline the modeling process for Scikit-Learn models. 
  
 This is an open-source project. Contributors are welcome. :) 
  
