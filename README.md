@@ -1,7 +1,7 @@
 # EDA and Beyond - Python library for automating common procedures in machine learning 
 
 
-**Contributors**: [Freda Xin](www.linkedin.com/in/freda-xin), [Mahdi Shadkam-Farrokhi](https://github.com/Shaddyjr)
+**Contributors**: [Freda Xin](https://www.linkedin.com/in/freda-xin), [Mahdi Shadkam-Farrokhi](https://github.com/Shaddyjr)
 
 
 ---
@@ -26,8 +26,10 @@ This is an open-source project. Contributors are welcome. :)
 ## Installation 
 
 ```
-pip install eda_and_beyond
+pip install eda-and-beyond==0.0.1
 ```
+The package is published on
+[PyPi](https://pypi.org/project/eda-and-beyond/0.0.1/).
 
 ---
 ## More Resources
