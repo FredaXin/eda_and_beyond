@@ -20,7 +20,8 @@ DESCRIPTION
     preparation, and data visualization process. 
 
 MODULE CONTENTS
-    intitial_eda_checks
+    inspect_dupes
+    inpect_nans
     view_columns_w_many_nans
     drop_columns_w_many_nans
     histograms_numeric_columns
@@ -39,41 +40,45 @@ MODULE CONTENTS
 
 
 
-def intitial_eda_checks(df):
+def inspect_dupes(df, dedupe=False):
     '''
-    Checks duplicates
-    Checks nulls
+    Checks duplicates (rows), and gets rid of duplicates if dedupe arg set to 'True' 
+    Arg: dataframe, dedupe (bool)
+    '''
+    num_of_dupe = len(df[df.duplicated()])
+
+    if dedupe and num_of_dupe>0: 
+        df.drop_duplicates(inplace=True)
+        print(f'Number of duplicates found: {num_of_dupe}')
+        return df
+
+    else: 
+        print(f'Number of duplicates found: {num_of_dupe}')
+        return num_of_dupe
+
+
+
+def inpect_nans(df): 
+    '''
+    Check number and percentage of NaN
     Arg: dataframe
     '''
-    results = {}
-    results['dup_found'] = None
-    results['pct_nan_found'] = None
-
-    num_of_dupe = len(df[df.duplicated(keep=False)])
-    if num_of_dupe > 0:
-        print(f'Number of dupes: {num_of_dupe}')
-    else:
-        print('No duplicates found.')
-    results['dup_found'] = num_of_dupe
-
     num_of_nan = df.isnull().sum().sum()
+
     if num_of_nan > 0:
         mask_total = df.isnull().sum().sort_values(ascending=False) 
-        total = mask_total[mask_total > 0]
+        number = mask_total[mask_total > 0]
 
         mask_percent = df.isnull().mean().sort_values(ascending=False) 
         percent = mask_percent[mask_percent > 0] 
 
-        missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent'])
-    
-        print(f'Total and Percentage of NaN:\n {missing_data}')
-        results['pct_nan_found'] = percent
+        missing_data = pd.concat([number, percent], axis=1, keys=['Number_of_NaN', 'Percent_of_Nan'])
+        print(f'Number and Percentage of NaN:\n {missing_data}')
     else: 
         print('No NaN found.')
-        results['pct_nan_found'] = 0
-    
-    return results 
-    
+        
+    return num_of_nan
+
 
 
 def view_columns_w_many_nans(df, missing_percent=.9):
