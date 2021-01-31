@@ -72,7 +72,7 @@ def inpect_nans(df):
         mask_percent = df.isnull().mean().sort_values(ascending=False) 
         percent = mask_percent[mask_percent > 0] 
 
-        missing_data = pd.concat([number, percent], axis=1, keys=['Number_of_NaN', 'Percent_of_Nan'])
+        missing_data = pd.concat([number, percent], axis=1, keys=['Number_of_NaN', 'Percent_of_NaN'])
         print(f'Number and Percentage of NaN:\n {missing_data}')
     else: 
         print('No NaN found.')
@@ -102,10 +102,9 @@ def drop_columns_w_many_nans(df, missing_percent=.9):
     Args: dataframe, missing percentage (default=.9)
     Returns dataframe
     '''
-    series = view_columns_w_many_nans(df, missing_percent=missing_percent)
-    list_of_cols = series.index.to_list()
-    df.drop(columns=list_of_cols)
-    print(list_of_cols)
+    list_of_cols = view_columns_w_many_nans(df, missing_percent=missing_percent)
+    df.drop(columns=list_of_cols, inplace=True)
+    print(list_of_cols, 'Caution: df has been mutated!')
     return df
 
 
@@ -121,6 +120,7 @@ def histograms_numeric_columns(df, numerical_columns):
     g = sns.FacetGrid(f, col='variable',  col_wrap=4, sharex=False, sharey=False)
     g = g.map(sns.distplot, 'value')
     return g
+
 
 
 # Adapted from https://www.kaggle.com/dgawlik/house-prices-eda#Categorical-data
@@ -154,14 +154,12 @@ def scatter_plots(df, numerical_cols, target_col):
     def chunker(seq, size):
         return (seq[pos:pos + size] for pos in range(0, len(seq), size))
     
-    # TODO 
     # Iterate through numerical_cols and generate each subplot
     for y, plot_group in enumerate(chunker((numerical_cols), 3)):
         for x, col in enumerate(plot_group):
             sub_ax = ax[y][x]
-            plots = sub_ax.scatter(df[col], df[target_col], s=2)
-            plots_titles = sub_ax.set_title(col)
-    return (plots, plots_titles)
+            sub_ax.scatter(df[col], df[target_col], s=2)
+            sub_ax.set_title(col)
     
 
 

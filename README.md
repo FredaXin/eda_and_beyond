@@ -22,14 +22,15 @@ The package consists of two modules:
 This is an open-source project. Contributors are welcome. :) 
  
 
+--- 
+## Installation 
+
+```
+pip install eda_and_beyond
+```
+
 ---
 ## More Resources
 
 **[Blog post on using Python functions in EDA](https://towardsdatascience.com/creating-python-functions-for-exploratory-data-analysis-and-data-cleaning-2c462961bd71?sk=ea9ba027ee85504c078145f442b204b9)**  
 **[Blog post on using Python classes in modeling]() (coming soon)**   
-
-
---- 
-## Installation 
-
-

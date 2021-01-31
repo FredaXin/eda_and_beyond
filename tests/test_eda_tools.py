@@ -4,6 +4,8 @@ from eda_and_beyond import eda_tools
 import pandas as pd
 from pandas._testing import assert_frame_equal
 
+
+
 class TestEdaTools(unittest.TestCase):
 
     def test_inspect_dupes(self):
@@ -15,7 +17,7 @@ class TestEdaTools(unittest.TestCase):
         results = eda_tools.inspect_dupes(df_1, True)
         expected = df_2
         assert_frame_equal(results, expected)
-
+        
 
     def test_inpect_nans(self): 
         d_1 = {'col1': [1, 2, 3, 3], 'col2': [3, float('NaN'), 3, 3], 'col3': ['foo', 'bar', 'baz', 'baz']}
@@ -25,17 +27,7 @@ class TestEdaTools(unittest.TestCase):
         expected = 1
         self.assertEqual(results, expected)
 
-        
-    # def test_isupper(self):
-    #     self.assertTrue('FOO'.isupper())
-    #     self.assertFalse('Foo'.isupper())
 
-    # def test_split(self):
-    #     s = 'hello world'
-    #     self.assertEqual(s.split(), ['hello', 'world'])
-    #     # check that s.split fails when the separator is not a string
-    #     with self.assertRaises(TypeError):
-    #         s.split(2)
 
 if __name__ == '__main__':
     unittest.main()
