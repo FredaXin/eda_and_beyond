@@ -26,4 +26,7 @@ setuptools.setup(
           'sklearn'
       ],
     python_requires='>=3.7',
+
+    test_suite='nose.collector',
+    tests_require=['nose']
 )

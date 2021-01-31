@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 eda-and-beyond = {editable = true,path = "."}
 nose = "*"
+twine = "*"
 
 [requires]
 python_version = "3.7"
